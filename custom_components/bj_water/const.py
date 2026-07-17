@@ -3,7 +3,6 @@ import logging
 from datetime import timedelta
 from homeassistant.const import Platform
 
-
 DOMAIN = "bj_water"
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 LOGGER = logging.getLogger(__package__)

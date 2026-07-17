@@ -1,60 +1,29 @@
-"""The 北京水费 integration."""
+"""北京水费集成"""
 from __future__ import annotations
+
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-
-from homeassistant.helpers.discovery import async_load_platform
-from homeassistant.config_entries import ConfigType, ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.event import async_track_point_in_utc_time
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.helpers.aiohttp_client import (
-    async_create_clientsession,
-)
-from .bj_water import BJWater
 
-from .const import DOMAIN, LOGGER, UPDATE_INTERVAL
+from .const import DOMAIN, LOGGER
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up platform from a ConfigEntry."""
+    """通过 ConfigEntry 设置集成"""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
     return True
 
 
-# async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up 北京水费 from a config entry."""
-
-    hass.data.setdefault(DOMAIN, {})
-    LOGGER.warning("config: " + str(config))
-    LOGGER.warning("hass data: " + str(hass.data[DOMAIN]))
-
-    # user_code = config[DOMAIN].get("userCode")
-    user_code = hass.data[DOMAIN].get("userCode")
-    config[DOMAIN] = {"userCode": hass.data[DOMAIN].get("userCode")}
-
-    LOGGER.warning("user code:" + str(user_code))
-    LOGGER.warning("bj water: %s" % user_code)
-    api = BJWater(async_create_clientsession(hass), user_code)
-    coordinator = DataUpdateCoordinator(
-        hass,
-        LOGGER,
-        name=DOMAIN,
-        update_interval=UPDATE_INTERVAL,
-        update_method=api.fetch_data,
-    )
-    await coordinator.async_refresh()
-    hass.data[DOMAIN] = {
-        "config": config[DOMAIN],
-        "coordinator": coordinator,
-    }
-    hass.async_create_task(
-        async_load_platform(hass, "sensor", DOMAIN, {}, config[DOMAIN])
-    )
-
-    return True
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """卸载集成"""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            hass.data.pop(DOMAIN, None)
+    LOGGER.info("async_unload_entry: %s", unload_ok)
+    return unload_ok
