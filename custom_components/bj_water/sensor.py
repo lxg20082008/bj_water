@@ -161,6 +161,9 @@ async def async_setup_entry(
     # 主信息传感器（兼容 electricity-info-card）
     sensors_list.append(BJWaterInfoSensor(coordinator, user_code, device_info))
 
+    # 缴费记录聚合传感器（兼容 electricity-info-card pay_entity）
+    sensors_list.append(BJWaterPaymentSensor(coordinator, user_code, device_info))
+
     async_add_entities(sensors_list, False)
 
 
@@ -396,4 +399,73 @@ class BJWaterInfoSensor(BJWaterBaseSensor):
             "wastwater_treatment_price": data.get("wastwater_treatment_price", 0),
             "water_tax": data.get("water_tax", 0),
             "total_cost": data.get("total_cost", 0),
+        }
+
+
+# ========== 缴费记录聚合传感器（兼容 electricity-info-card pay_entity） ==========
+class BJWaterPaymentSensor(BJWaterBaseSensor):
+    """缴费记录聚合传感器
+
+    state: 最新缴费金额
+    attributes.paylist: 全部缴费记录数组，兼容 electricity-info-card pay_entity 格式
+    """
+
+    def __init__(
+        self, coordinator, user_code, device_info: DeviceInfo | None = None,
+    ) -> None:
+        super().__init__(coordinator, device_info)
+        self._unique_id = f"{DOMAIN}.{user_code}_payment"
+        self.entity_id = self._unique_id
+
+    @property
+    def name(self):
+        return "缴费记录"
+
+    @property
+    def state(self):
+        """最新缴费金额"""
+        paylist = self._build_paylist()
+        if paylist:
+            return paylist[0].get("rcvAmt", 0)
+        return 0
+
+    @property
+    def icon(self):
+        return "hass:currency-cny"
+
+    @property
+    def unit_of_measurement(self):
+        return "CNY"
+
+    @property
+    def device_class(self) -> str | None:
+        return SensorDeviceClass.WATER
+
+    def _build_paylist(self):
+        """从 cycle 数据构建缴费记录列表"""
+        data = self.coordinator.data
+        cycle = data.get("cycle", {})
+        records = []
+
+        for cycle_date, info in cycle.items():
+            fee = info.get("fee", {})
+            if fee.get("pay") == 1 and fee.get("amount", 0) > 0:
+                records.append({
+                    "payDate": fee.get("date", cycle_date),
+                    "rcvAmt": fee.get("amount", 0),
+                    "payModeName": str(fee.get("amount", 0)),
+                    "billDate": cycle_date,
+                    "水费": fee.get("sf", 0),
+                    "污水处理费": fee.get("wsf", 0),
+                    "水资源费": fee.get("szyf", 0),
+                })
+
+        # 按日期降序排列
+        records.sort(key=lambda r: r["payDate"], reverse=True)
+        return records
+
+    @property
+    def extra_state_attributes(self):
+        return {
+            "paylist": self._build_paylist(),
         }
