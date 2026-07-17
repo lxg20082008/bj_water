@@ -1,22 +1,36 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "title": "北京水费",
-          "description": "用于查询北京自来水使用量以及水费等信息",
-          "data": {
-            "userCode": "水表户号"
-          }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select City",
+        "description": "This integration is for **Beijing** area only. It retrieves water bill data from Beijing Water Supply Group's official API.",
+        "data": {
+          "region": "Service Area"
         }
       },
-      "error": {
-        "cannot_connect": "网络异常",
-        "invalid_auth": "未查询到内容,请检查户号",
-        "invalid_format": "户号格式错误",
-        "unknown": "未知错误"
-      },
-      "abort": {
-        "already_configured": "账号已添加，请勿重复添加"
+      "enter_code": {
+        "title": "Beijing Water Bill",
+        "description": "Enter your water meter account number (can be found on your bill or in the Beijing Water official WeChat account)",
+        "data": {
+          "userCode": "Account Number"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to server",
+      "invalid_auth": "No data found, please check your account number",
+      "invalid_format": "Invalid account number format (digits only)",
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "already_configured": "This account has already been added"
+    }
+  },
+  "selector": {
+    "region": {
+      "options": {
+        "beijing": "Beijing"
       }
     }
   }
+}

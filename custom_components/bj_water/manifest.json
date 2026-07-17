@@ -9,5 +9,6 @@
   "config_flow": true,
   "requirements": [],
   "ssdp": [],
-  "zeroconf": []
+  "zeroconf": [],
+  "icon": "/config/custom_components/bj_water/icon.png"
 }

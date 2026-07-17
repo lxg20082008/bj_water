@@ -15,6 +15,7 @@ from .bj_water import BJWater, InvalidData
 from .const import DOMAIN, LOGGER
 
 STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required("userCode"): str})
+STEP_REGION_SCHEMA = vol.Schema({vol.Required("region"): vol.In(["beijing"])})
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -44,7 +45,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """配置第一步：输入户号"""
+        """配置第一步：选择区域"""
+        if user_input is not None:
+            # 区域选择完成，进入户号输入步骤
+            return await self.async_step_enter_code()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=STEP_REGION_SCHEMA,
+            description_placeholders={"area": "北京"},
+        )
+
+    async def async_step_enter_code(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """配置第二步：输入户号"""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -68,7 +83,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="enter_code", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
 
