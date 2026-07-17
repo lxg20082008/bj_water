@@ -2,15 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "Select City",
-        "description": "This integration is for **Beijing** area only. It retrieves water bill data from Beijing Water Supply Group's official API.",
-        "data": {
-          "region": "Service Area"
-        }
-      },
-      "enter_code": {
         "title": "Beijing Water Bill",
-        "description": "Enter your water meter account number (can be found on your bill or in the Beijing Water official WeChat account)",
+        "description": "Enter your water meter account number to query usage and bill data from Beijing Water Supply Group.",
         "data": {
           "userCode": "Account Number"
         }
@@ -24,13 +17,6 @@
     },
     "abort": {
       "already_configured": "This account has already been added"
-    }
-  },
-  "selector": {
-    "region": {
-      "options": {
-        "beijing": "Beijing"
-      }
     }
   }
 }

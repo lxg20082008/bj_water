@@ -2,15 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "选择城市",
-        "description": "本集成适用于**北京地区**，通过北京自来水集团微信公众号API获取水费账单数据。水电名称：北京自来水集团有限责任公司",
-        "data": {
-          "region": "服务区域"
-        }
-      },
-      "enter_code": {
         "title": "北京水费",
-        "description": "请输入自来水表户号，户号可从公众号查询获取",
+        "description": "输入自来水表户号，用于查询北京自来水使用量以及水费等信息",
         "data": {
           "userCode": "水表户号"
         }
@@ -18,19 +11,12 @@
     },
     "error": {
       "cannot_connect": "网络异常",
-      "invalid_auth": "未查询到内容,请检查户号",
+      "invalid_auth": "未查询到内容，请检查户号",
       "invalid_format": "户号格式错误，应为纯数字",
       "unknown": "未知错误"
     },
     "abort": {
       "already_configured": "账号已添加，请勿重复添加"
-    }
-  },
-  "selector": {
-    "region": {
-      "options": {
-        "beijing": "北京"
-      }
     }
   }
 }

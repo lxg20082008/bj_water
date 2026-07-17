@@ -5,6 +5,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -106,6 +107,14 @@ async def async_setup_entry(
     await coordinator.async_refresh()
     data = coordinator.data
 
+    # 构建设备信息 — 每个户号一个设备，可分配区域
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, user_code)},
+        name=f"北京水费 ({user_code})",
+        manufacturer="北京自来水集团",
+        model="水费账单",
+    )
+
     # 原有的数值型和历史传感器
     for key, value in data.items():
         if key in SENSORS:
@@ -113,28 +122,28 @@ async def async_setup_entry(
                 for items in value:
                     for k, v in items.items():
                         sensors_list.append(
-                            BJWaterSensor(coordinator, user_code, key, v, k)
+                            BJWaterSensor(coordinator, user_code, key, v, device_info, k)
                         )
             else:
                 sensors_list.append(
-                    BJWaterSensor(coordinator, user_code, key, value)
+                    BJWaterSensor(coordinator, user_code, key, value, device_info)
                 )
         elif key == "cycle":
             for k, v in value.items():
                 index = v.get("index", k)
                 sensors_list.append(
                     BJWaterHistoryFeeSensor(
-                        coordinator, user_code, k, v.get("fee", {}), index
+                        coordinator, user_code, k, v.get("fee", {}), index, device_info
                     )
                 )
                 sensors_list.append(
                     BJWaterHistoryUsageSensor(
-                        coordinator, user_code, k, v.get("meter", {}), index
+                        coordinator, user_code, k, v.get("meter", {}), index, device_info
                     )
                 )
 
-    # 新增：主信息传感器（兼容 electricity-info-card）
-    sensors_list.append(BJWaterInfoSensor(coordinator, user_code))
+    # 主信息传感器（兼容 electricity-info-card）
+    sensors_list.append(BJWaterInfoSensor(coordinator, user_code, device_info))
 
     async_add_entities(sensors_list, False)
 
@@ -143,9 +152,13 @@ async def async_setup_entry(
 class BJWaterBaseSensor(CoordinatorEntity):
     """传感器基类"""
 
-    def __init__(self, coordinator) -> None:
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator, device_info: DeviceInfo | None = None) -> None:
         super().__init__(coordinator)
         self._unique_id = None
+        if device_info is not None:
+            self._attr_device_info = device_info
 
     @property
     def unique_id(self):
@@ -161,9 +174,15 @@ class BJWaterSensor(BJWaterBaseSensor, SensorEntity):
     """单个数值传感器（阶梯用量、单价等）"""
 
     def __init__(
-        self, coordinator, user_code, sensor_key, sensor_value, sensor_num=0
+        self,
+        coordinator,
+        user_code,
+        sensor_key,
+        sensor_value,
+        device_info: DeviceInfo | None = None,
+        sensor_num=0,
     ) -> None:
-        super().__init__(coordinator)
+        super().__init__(coordinator, device_info)
         if sensor_num == 0:
             self._unique_id = f"{DOMAIN}.{user_code}_{sensor_key}"
         else:
@@ -213,8 +232,11 @@ class BJWaterSensor(BJWaterBaseSensor, SensorEntity):
 class BJWaterHistoryFeeSensor(BJWaterBaseSensor):
     """历史缴费记录传感器"""
 
-    def __init__(self, coordinator, user_code, bill_date, sensor_attrs, index) -> None:
-        super().__init__(coordinator)
+    def __init__(
+        self, coordinator, user_code, bill_date,
+        sensor_attrs, index, device_info: DeviceInfo | None = None,
+    ) -> None:
+        super().__init__(coordinator, device_info)
         self._unique_id = f"{DOMAIN}.{user_code}_{index}_Fee"
         self.entity_id = self._unique_id
         self._bill_date = bill_date
@@ -256,8 +278,11 @@ class BJWaterHistoryFeeSensor(BJWaterBaseSensor):
 class BJWaterHistoryUsageSensor(BJWaterBaseSensor):
     """历史用水量传感器"""
 
-    def __init__(self, coordinator, user_code, bill_date, sensor_attrs, index) -> None:
-        super().__init__(coordinator)
+    def __init__(
+        self, coordinator, user_code, bill_date,
+        sensor_attrs, index, device_info: DeviceInfo | None = None,
+    ) -> None:
+        super().__init__(coordinator, device_info)
         self._unique_id = f"{DOMAIN}.{user_code}_{index}_Usage"
         self.entity_id = self._unique_id
         self._bill_date = bill_date
@@ -305,8 +330,10 @@ class BJWaterInfoSensor(BJWaterBaseSensor):
     attributes: daylist / monthlist / yearlist（兼容 electricity-info-card 格式）
     """
 
-    def __init__(self, coordinator, user_code) -> None:
-        super().__init__(coordinator)
+    def __init__(
+        self, coordinator, user_code, device_info: DeviceInfo | None = None,
+    ) -> None:
+        super().__init__(coordinator, device_info)
         self._unique_id = f"{DOMAIN}.{user_code}_info"
         self.entity_id = self._unique_id
         self._user_code = user_code
