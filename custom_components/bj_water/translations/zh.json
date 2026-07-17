@@ -7,13 +7,22 @@
         "data": {
           "userCode": "水表户号"
         }
+      },
+      "location": {
+        "title": "选择地点",
+        "description": "选择该户号对应的地点，便于区分多个户号",
+        "data": {
+          "location": "地点",
+          "custom_location": "自定义地点名称"
+        }
       }
     },
     "error": {
       "cannot_connect": "网络异常",
       "invalid_auth": "未查询到内容，请检查户号",
       "invalid_format": "户号格式错误，应为纯数字",
-      "unknown": "未知错误"
+      "unknown": "未知错误",
+      "custom_location": "请输入地点名称"
     },
     "abort": {
       "already_configured": "账号已添加，请勿重复添加"

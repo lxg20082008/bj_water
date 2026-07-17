@@ -94,6 +94,7 @@ async def async_setup_entry(
     sensors_list = []
     config = hass.data[DOMAIN][config_entry.entry_id]
     user_code = config["userCode"]
+    location = config.get("location", "")
     api = BJWater(async_create_clientsession(hass), user_code)
 
     coordinator = DataUpdateCoordinator(
@@ -107,10 +108,15 @@ async def async_setup_entry(
     await coordinator.async_refresh()
     data = coordinator.data
 
+    # 设备名称使用地点名称
+    device_name = f"北京水费 ({user_code})"
+    if location:
+        device_name = f"{location}水费 ({user_code})"
+
     # 构建设备信息 — 每个户号一个设备，可分配区域
     device_info = DeviceInfo(
         identifiers={(DOMAIN, user_code)},
-        name=f"北京水费 ({user_code})",
+        name=device_name,
         manufacturer="北京自来水集团",
         model="水费账单",
     )

@@ -10,5 +10,5 @@
   "requirements": [],
   "ssdp": [],
   "zeroconf": [],
-  "icon": "/config/custom_components/bj_water/icon.png"
+  "icon": "mdi:water-circle"
 }

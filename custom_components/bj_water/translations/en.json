@@ -7,13 +7,22 @@
         "data": {
           "userCode": "Account Number"
         }
+      },
+      "location": {
+        "title": "Select Location",
+        "description": "Select a label for this account to distinguish multiple accounts.",
+        "data": {
+          "location": "Location",
+          "custom_location": "Custom Location Name"
+        }
       }
     },
     "error": {
       "cannot_connect": "Cannot connect to server",
       "invalid_auth": "No data found, please check your account number",
       "invalid_format": "Invalid account number format (digits only)",
-      "unknown": "Unknown error"
+      "unknown": "Unknown error",
+      "custom_location": "Please enter a location name"
     },
     "abort": {
       "already_configured": "This account has already been added"
