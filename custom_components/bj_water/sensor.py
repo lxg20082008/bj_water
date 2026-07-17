@@ -4,6 +4,7 @@ from homeassistant.components.sensor.const import SensorDeviceClass, SensorState
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -94,7 +95,7 @@ async def async_setup_entry(
     sensors_list = []
     config = hass.data[DOMAIN][config_entry.entry_id]
     user_code = config["userCode"]
-    location = config.get("location", "")
+    area_id = config.get("area_id", "")
     api = BJWater(async_create_clientsession(hass), user_code)
 
     coordinator = DataUpdateCoordinator(
@@ -108,17 +109,26 @@ async def async_setup_entry(
     await coordinator.async_refresh()
     data = coordinator.data
 
-    # 设备名称使用地点名称
-    device_name = f"北京水费 ({user_code})"
-    if location:
-        device_name = f"{location}水费 ({user_code})"
+    # 解析区域名称
+    suggested_area = None
+    if area_id:
+        area_reg = area_registry.async_get(hass)
+        area = area_reg.async_get_area(area_id)
+        if area:
+            suggested_area = area.name
 
-    # 构建设备信息 — 每个户号一个设备，可分配区域
+    # 设备名称
+    device_name = f"北京水费 ({user_code})"
+    if suggested_area:
+        device_name = f"{suggested_area}水费 ({user_code})"
+
+    # 构建设备信息 — 每个户号一个设备，自动分配到选中区域
     device_info = DeviceInfo(
         identifiers={(DOMAIN, user_code)},
         name=device_name,
         manufacturer="北京自来水集团",
         model="水费账单",
+        suggested_area=suggested_area,
     )
 
     # 原有的数值型和历史传感器

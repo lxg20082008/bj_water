@@ -3,17 +3,16 @@
     "step": {
       "user": {
         "title": "Beijing Water Bill",
-        "description": "Enter your water meter account number to query usage and bill data from Beijing Water Supply Group.",
+        "description": "Enter your water meter account number to query usage and bill data.",
         "data": {
           "userCode": "Account Number"
         }
       },
-      "location": {
-        "title": "Select Location",
-        "description": "Select a label for this account to distinguish multiple accounts.",
+      "area": {
+        "title": "Select Area",
+        "description": "Choose the HA area for this device.",
         "data": {
-          "location": "Location",
-          "custom_location": "Custom Location Name"
+          "area_id": "Area"
         }
       }
     },
@@ -21,8 +20,7 @@
       "cannot_connect": "Cannot connect to server",
       "invalid_auth": "No data found, please check your account number",
       "invalid_format": "Invalid account number format (digits only)",
-      "unknown": "Unknown error",
-      "custom_location": "Please enter a location name"
+      "unknown": "Unknown error"
     },
     "abort": {
       "already_configured": "This account has already been added"

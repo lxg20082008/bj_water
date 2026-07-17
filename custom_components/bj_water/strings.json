@@ -8,12 +8,11 @@
           "userCode": "水表户号"
         }
       },
-      "location": {
-        "title": "选择地点",
-        "description": "选择该户号对应的地点，便于区分多个户号",
+      "area": {
+        "title": "选择区域",
+        "description": "选择该户号对应的 HA 区域，设备将自动归属到该区域",
         "data": {
-          "location": "地点",
-          "custom_location": "自定义地点名称"
+          "area_id": "区域"
         }
       }
     },
@@ -21,8 +20,7 @@
       "cannot_connect": "网络异常",
       "invalid_auth": "未查询到内容，请检查户号",
       "invalid_format": "户号格式错误，应为纯数字",
-      "unknown": "未知错误",
-      "custom_location": "请输入地点名称"
+      "unknown": "未知错误"
     },
     "abort": {
       "already_configured": "账号已添加，请勿重复添加"
